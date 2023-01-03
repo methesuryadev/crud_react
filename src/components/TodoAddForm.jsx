@@ -1,25 +1,45 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import Row from "react-bootstrap/Row";
 import Card from "react-bootstrap/Card";
 import Form from "react-bootstrap/Form";
 import InputGroup from "react-bootstrap/InputGroup";
 import Button from "react-bootstrap/Button";
 import axios from "axios";
-import AlertComp from './AlertComp'
-
+import AlertComp from "./AlertComp";
 
 export default function TodoAddForm() {
+
   let baseUrl = "http://localhost:8088/api";
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
   const [tododate, setTododate] = useState("");
+  
   const [showalert, setShowalert] = useState(false);
   const [apimsg, setApimsg] = useState('');
   const [alerttype, setAlerttype] = useState('success');
+  const [todos, setTodos] = useState('');
 
+  useEffect(() => {
+    axios.get(baseUrl + "/todo/list")
+      .then(function (response) {
+        // handle success
+          console.log(response.data.data);
+        setTodos(response.data.data);
+      })
+      .catch(function (error) {
+        // handle error
+        console.log(error);
+        return;
+      });
+  }, []);
+  
+  function cancelAlert() {
+    setShowalert(false)
+  }
+  
   function addTodo() {
     let todoInfo = { title: title, todo_desc: desc, date: tododate};
-    console.log('todoInfo',todoInfo)
+
     if (title != "" && desc != "" && tododate != "") {
       const options = {
         url: baseUrl + "/todo/create",
@@ -54,15 +74,10 @@ export default function TodoAddForm() {
     }
   }
 
-  function cancelAlert() {
-    setShowalert(false)
-    console.log('hide data')
-  }
-
   return (
     <>
+    <AlertComp alertshow={showalert} apimsg={apimsg} alerttype={alerttype} cancelAlert={cancelAlert}/>
       <Row>
-      <AlertComp alertshow={showalert} apimsg={apimsg} alerttype={alerttype} cancelAlert={cancelAlert}/>
         <Card style={{ margin: "2% 0%" }}>
           <Card.Header>Add Todo</Card.Header>
           <Card.Body>
