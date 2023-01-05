@@ -5,38 +5,13 @@ import Form from "react-bootstrap/Form";
 import InputGroup from "react-bootstrap/InputGroup";
 import Button from "react-bootstrap/Button";
 import axios from "axios";
-import AlertComp from "./AlertComp";
 
-export default function TodoAddForm() {
-
-  let baseUrl = "http://localhost:8088/api";
+export default function TodoAddForm({showAlertFunc,baseUrl}) {
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
   const [tododate, setTododate] = useState("");
   
-  const [showalert, setShowalert] = useState(false);
-  const [apimsg, setApimsg] = useState('');
-  const [alerttype, setAlerttype] = useState('success');
-  const [todos, setTodos] = useState('');
 
-  useEffect(() => {
-    axios.get(baseUrl + "/todo/list")
-      .then(function (response) {
-        // handle success
-          console.log(response.data.data);
-        setTodos(response.data.data);
-      })
-      .catch(function (error) {
-        // handle error
-        console.log(error);
-        return;
-      });
-  }, []);
-  
-  function cancelAlert() {
-    setShowalert(false)
-  }
-  
   function addTodo() {
     let todoInfo = { title: title, todo_desc: desc, date: tododate};
 
@@ -54,15 +29,19 @@ export default function TodoAddForm() {
       axios(options)
         .then((response) => {
           console.log(response);
-          if(response.status){
-            setShowalert(true)
-            setApimsg(response.data.message)
-          }
-          if(response.status!==200){
-            setShowalert('danger')
-          }else{
-            setShowalert('success')
-          }
+          let alert='';
+          let apimsg='';
+          let alerttype='';
+          if (response.status) {
+            alert=true
+            apimsg=response.data.message
+            if (response.status !== 200) {
+              alerttype="danger";
+            } else {
+              alerttype="success";
+            }
+            showAlertFunc(alert,apimsg,alerttype)
+          }          
         })
         .catch(function (error) {
           // handle error
@@ -76,7 +55,6 @@ export default function TodoAddForm() {
 
   return (
     <>
-    <AlertComp alertshow={showalert} apimsg={apimsg} alerttype={alerttype} cancelAlert={cancelAlert}/>
       <Row>
         <Card style={{ margin: "2% 0%" }}>
           <Card.Header>Add Todo</Card.Header>
